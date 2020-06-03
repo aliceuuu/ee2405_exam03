@@ -64,8 +64,6 @@ void FXOS8700CQ_readRegs(int addr, uint8_t * data, int len);
 
 void FXOS8700CQ_writeRegs(uint8_t * data, int len);
 
-void LEDControl(Arguments *in, Reply *out);
-
 RPCFunction rpcLED(&LEDControl, "LEDControl");
 
 void xbee_rx_interrupt(void);
@@ -168,7 +166,7 @@ int main() {
 
   }
 
-   /*
+   
   xbee.printf("ATMY <REMOTE_MY>\r\n");
 
   reply_messange(xbee_reply, "setting MY : <REMOTE_MY>");
@@ -203,39 +201,20 @@ int main() {
 
   reply_messange(xbee_reply, "exit AT mode");
 
-  */
+  
 
   //xbee.getc();
 
    //EventQueue queue;
    
    queue.call(1000, Acc);
+
+   queue.call(1000, reply_messange);
    
    queue.dispatch();
 
-      //wait(1.0);
-
-   // receive commands, and send back the responses
-
-    char buf[256], outbuf[256];
-
-    while(1) {
-
-        memset(buf, 0, 256);
-
-        strcpy(buf, velocity.str());
-
-
-        //Call the static call method on the RPC class
-
-        RPC::call(buf, outbuf);
-
-        pc.printf("%s\r\n", outbuf);
-
-    }
     
-    xbee.attach(xbee_rx_interrupt, Serial::RxIrq);
-
+   
 
 }
 
@@ -257,47 +236,7 @@ void FXOS8700CQ_writeRegs(uint8_t * data, int len) {
 }
 
 
-// Make sure the method takes in Arguments and Reply objects.
 
-void LEDControl (Arguments *in, Reply *out)   {
-
-    bool success = true;
-
-
-    // In this scenario, when using RPC delimit the two arguments with a space.
-
-    x = in->getArg<double>();
-
-    y = in->getArg<double>();
-
-
-    // Have code here to call another RPC function to wake up specific led or close it.
-
-    char buffer[200], outbuf[256];
-
-    char strings[20];
-
-    int led = x;
-
-    int on = y;
-
-    int n = sprintf(strings, "/myled%d/write %d", led, on);
-
-    strcpy(buffer, strings);
-
-    RPC::call(buffer, outbuf);
-
-    if (success) {
-
-        out->putData(buffer);
-
-    } else {
-
-        out->putData("Failed to execute.");
-
-    }
-
-}
 
 void xbee_rx_interrupt(void)
 
@@ -334,9 +273,9 @@ void xbee_rx(void)
 
       i = 0;
 
-      pc.printf("Get: %s\r\n", buf);
+      //pc.printf("Get: %s\r\n", buf);
 
-      xbee.printf("%s", buf);
+      xbee.printf("%lf\n", velocity);
 
     }
 
@@ -351,11 +290,17 @@ void xbee_rx(void)
 
 void reply_messange(char *xbee_reply, char *messange){
 
-  xbee_reply[0] = xbee.getc();
+   string s = velocity.str();
 
-  xbee_reply[1] = xbee.getc();
+  xbee_reply[0] = s[0];
 
-  xbee_reply[2] = xbee.getc();
+  xbee_reply[1] = s[1];
+
+  xbee_reply[2] = s[2];
+
+  xbee_reply[3] = s[3];
+
+  xbee_reply[4] = s[4];
 
   if(xbee_reply[1] == 'O' && xbee_reply[2] == 'K'){
 
@@ -366,6 +311,10 @@ void reply_messange(char *xbee_reply, char *messange){
    xbee_reply[1] = '\0';
 
    xbee_reply[2] = '\0';
+
+   xbee_reply[3] = '\0';
+
+   xbee_reply[4] = '\0';
 
   }
 
