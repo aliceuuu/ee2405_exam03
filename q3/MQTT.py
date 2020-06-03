@@ -64,7 +64,7 @@ mqttc.subscribe(topic, 0)
 
 # Publish messages from Python
 
-mqttp.publish(topic, "%s\n", velocity, qos = 0)
+mqttp.publish(topic, velocity + "\n", qos = 0)
 
 #num = 0
 
